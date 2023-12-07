@@ -1,3 +1,16 @@
+*************************
+*   Hexpawn  for KIM-1  *
+*  by Robert C. Leedom  *
+*************************
+
+TIMA     =       $1704
+DREG     =       $1741
+SCANDS   =       $1f1f
+DIG_off  =       $1f3d
+KEYIN    =       $1f40
+segoff   =       $1f4e
+GETKEY   =       $1f6a
+CH_TAB   =       $1fe7
 
          .org    $0100
          ldx     #$6e
@@ -8,7 +21,7 @@ clear:   lda     table,x
          sta     $19
          jmp     start
 
-BrdPos:  .byte   $43
+BrdIdx:  .byte   $43
          .byte   $0b
          .byte   $0b
          .byte   $0b
@@ -230,8 +243,9 @@ table:   .byte   $00
          .byte   $63
          .byte   $40
          .byte   $00
-		 
-         .org    $0200
+         
+		 .org    $0200
+
 start:   ldx     #$07
          lda     #$00
 clr_pos: sta     $10,x
@@ -296,19 +310,19 @@ clr_pos: sta     $10,x
          dex
          bpl     @L0264
 @L026F:  lda     #$7f
-         sta     $1741
+         sta     DREG
          ldy     #$00
          ldx     #$09
 @L0278:  lda     $0010,y
          sty     $fc
-         jsr     $1f4e
+         jsr     segoff
          iny
          cpy     #$06
          bcc     @L0278
-         jsr     $1f3d
+         jsr     DIG_off
 @L0288:  cld
-         jsr     $1f40
-         jsr     $1f6a
+         jsr     KEYIN
+         jsr     GETKEY
          cmp     #$13
          bne     @L0296
          jmp     start
@@ -320,7 +334,7 @@ clr_pos: sta     $10,x
          sta     $f9,x
          dex
          bpl     @L029C
-         jsr     $1f1f
+         jsr     SCANDS
          bpl     @L0288
 @L02A8:  ldx     $14
          cpx     #$c0
@@ -368,7 +382,7 @@ clr_pos: sta     $10,x
 @L02FC:  lda     #$ff
 @L02FE:  sta     $16
          sty     $07,x
-         lda     $1fe7,x
+         lda     CH_TAB,x
          sta     $15
          ldy     #$00
          ldx     $1d
@@ -378,7 +392,7 @@ clr_pos: sta     $10,x
          bmi     @L0315
 
 @L0313:  stx     $1d
-@L0315:  lda     $1fe7,x
+@L0315:  lda     CH_TAB,x
          sta     $13
          jmp     @L0218
 
@@ -394,13 +408,13 @@ clr_pos: sta     $10,x
          cmp     #$03
          bmi     @L0376
          ldy     #$60
-@L0334:  ldx     BrdPos,y
+@L0334:  ldx     BrdIdx,y
          cpx     $01
          bne     @L0349
-         ldx     BrdPos+1,y
+         ldx     BrdIdx+1,y
          cpx     $02
          bne     @L0349
-         ldx     BrdPos+2,y
+         ldx     BrdIdx+2,y
          cpx     $03
          beq     @L0350
 @L0349:  dey
@@ -409,7 +423,7 @@ clr_pos: sta     $10,x
          bpl     @L0334
          bmi     @L0383
 
-@L0350:  lda     $1704
+@L0350:  lda     TIMA
          and     #$03
          tax
          beq     @L0359
